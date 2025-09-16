@@ -21,7 +21,7 @@ Requirements: Node 18+, npm, Docker (optional).
 
 1. Unzip and open the folder:
    ```bash
-   cd move37-realtime-poll-advanced
+   cd move37
    ```
 
 2. Start Postgres with Docker Compose:
