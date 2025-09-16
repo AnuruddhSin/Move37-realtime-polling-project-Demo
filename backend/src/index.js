@@ -11,7 +11,6 @@ const rateLimit = require('express-rate-limit');
 const cron = require('node-cron');
 
 
-// Load .env early (already loaded above). Auto DB setup (push + seed) if requested.
 const { execSync } = require('child_process');
 const AUTO_SETUP_DB = (process.env.AUTO_SETUP_DB || 'false').toLowerCase() === 'true';
 if (AUTO_SETUP_DB) {
@@ -33,7 +32,6 @@ const io = new Server(server, { cors: { origin: '*' } });
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_me';
 
-// Rate limiter
 const apiLimiter = rateLimit({ windowMs: 15*60*1000, max: 200 });
 app.use(cors());
 app.use(express.json());
@@ -103,8 +101,6 @@ app.post('/api/auth/login', async (req, res) => {
   res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role }, token });
 });
 
-/** POLLS */
-// Create poll (auth)
 app.post('/api/polls', authMiddleware, async (req, res) => {
   const { question, options, publishAt } = req.body;
   if (!question || !Array.isArray(options) || options.filter(Boolean).length < 2) return res.status(400).json({ error: 'question, options(array with at least 2) required' });
@@ -122,7 +118,6 @@ app.post('/api/polls', authMiddleware, async (req, res) => {
   res.json(poll);
 });
 
-// List polls with search & pagination
 app.get('/api/polls', async (req, res) => {
   const q = req.query.q || '';
   const page = Math.max(1, Number(req.query.page) || 1);
@@ -181,7 +176,6 @@ app.get('/api/polls/:id/voters', authMiddleware, adminOnly, async (req, res) => 
   res.json(votes.map(v => ({ id: v.id, user: { id: v.user.id, name: v.user.name, email: v.user.email }, option: { id: v.pollOption.id, text: v.pollOption.text }, createdAt: v.createdAt })));
 });
 
-/** VOTE */
 app.post('/api/polls/:id/vote', authMiddleware, async (req, res) => {
   try {
     const pollId = Number(req.params.id);
@@ -212,9 +206,7 @@ app.post('/api/polls/:id/vote', authMiddleware, async (req, res) => {
   }
 });
 
-// Auto-publish cron
 
-// Update poll (only creator or admin)
 app.put('/api/polls/:id', authMiddleware, async (req, res) => {
   try {
     const pollId = Number(req.params.id);
@@ -223,15 +215,12 @@ app.put('/api/polls/:id', authMiddleware, async (req, res) => {
     if (!poll) return res.status(404).json({ error: 'poll not found' });
     if (req.user.role !== 'ADMIN' && poll.creatorUserId !== req.user.id) return res.status(403).json({ error: 'forbidden' });
 
-    // Update question, isPublished, publishAt
     const updated = await prisma.poll.update({
       where: { id: pollId },
       data: { question: question ?? poll.question, isPublished: typeof isPublished === 'boolean' ? isPublished : poll.isPublished, publishAt: publishAt ? new Date(publishAt) : poll.publishAt }
     });
 
-    // If options array provided, replace options (simple approach: delete existing options and create new ones)
     if (Array.isArray(options)) {
-      // delete votes for these poll options and options themselves
       await prisma.vote.deleteMany({ where: { pollId } });
       await prisma.pollOption.deleteMany({ where: { pollId } });
       await prisma.pollOption.createMany({ data: options.filter(Boolean).map((text) => ({ text, pollId })) });
