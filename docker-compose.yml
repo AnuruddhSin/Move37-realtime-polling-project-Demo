@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: prisma
+      POSTGRES_PASSWORD: prisma
+      POSTGRES_DB: pollingdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  backend:
+    build: ./backend
+    depends_on: [db]
+    environment:
+      DATABASE_URL: "postgresql://prisma:prisma@db:5432/pollingdb?schema=public"
+      PORT: 4000
+      JWT_SECRET: "please_change_me_in_prod"
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+  frontend:
+    build: ./frontend
+    depends_on: [backend]
+    ports:
+      - "5173:5173"
+volumes:
+  pgdata:

@@ -1,0 +1,25 @@
+{
+  "name": "move37-backend",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "jsonwebtoken": "^9.0.0",
+    "express-rate-limit": "^6.7.0",
+    "node-cron": "^3.0.2",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "prisma": "^5.0.0"
+  }
+}
