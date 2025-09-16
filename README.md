@@ -1,7 +1,7 @@
 # Move37 — Realtime Polls (Advanced)
 
 This is an enhanced implementation of the Move37 real-time polling challenge.
-Original challenge file: Voting (1).pdf. fileciteturn2file0
+Original challenge file: Voting.pdf.
 
 ## What I added (advanced features)
 - JWT-based authentication (register/login).
